@@ -37,3 +37,14 @@ document.getElementById("delete").addEventListener("click", async () => {
   await chrome.storage.local.set({buffer});
   refreshMessageList();
 });
+
+document.getElementById("start-auto").addEventListener("click", async () => {
+  const [tab] = await chrome.tabs.query({active: true, currentWindow: true});
+
+  chrome.scripting.executeScript({
+    target: {tabId: tab.id},
+    func: () => {
+      window.sendNextMessageFromBuffer?.();
+    }
+  })
+  })
