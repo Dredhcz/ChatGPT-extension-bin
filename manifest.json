@@ -3,7 +3,7 @@
   "name": "ChatGPT bin",
   "version": "1.0",
   "description": "Umožní ukládat zprávy do zásobníku a odesílat je do ChatGPT-někdy ho dopíšu pořádně",
-  "permissions": ["storage", "activeTab", "scripting"],
+  "permissions": ["storage", "scripting", "activeTab"],
   "background": {
     "service_worker": "background.js"
   },
@@ -15,9 +15,10 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://chat.openai.com/*"],
-      "js": ["content.js"]
+      "matches": ["https://chatgpt.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
     }
   ],
-  "host_permissions": ["https://chat.openai.com/*"]
+  "host_permissions": ["https://chatgpt.com/*"]
 }

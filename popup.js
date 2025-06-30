@@ -1,3 +1,4 @@
+refreshMessageList()
 document.getElementById("save").addEventListener("click", async () => {
   const textarea = document.getElementById("message");
   const text = textarea.value.trim();
@@ -16,6 +17,7 @@ document.getElementById("save").addEventListener("click", async () => {
 async function refreshMessageList(){
   const { buffer } = await chrome.storage.local.get({ buffer: [] });
   const list = document.getElementById("message-list");
+
 
   list.innerHTML = "";
 
@@ -48,3 +50,7 @@ document.getElementById("start-auto").addEventListener("click", async () => {
     }
   })
   })
+
+  
+
+  
