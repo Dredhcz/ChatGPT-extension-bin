@@ -43,6 +43,7 @@ function waitForResponseToFinish(callback) {
   
       if (!buffer || buffer.length === 0) {
         console.log("🚫 Buffer je prázdný");
+        alert("All prompts generated");
         return;
       }
   
@@ -78,7 +79,11 @@ function waitForResponseToFinish(callback) {
   
       // 3. Odebrání zprávy z bufferu
       buffer.shift();
-      chrome.storage.local.set({ buffer });
+      chrome.storage.local.set({ buffer }).then(() => {
+        chrome.runtime.sendMessage({ action: "refresh" }, (response) => {
+          console.log("🔄 Buffer aktualizován a popup refreshnut:", response);
+        });
+      });
   
       // 4. Čekání na odpověď (nejprve start, pak konec)
       waitUntilGenerationStartsThenFinish(() => {

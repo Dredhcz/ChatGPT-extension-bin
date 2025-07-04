@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "ChatGPT bin",
+  "name": "PromptQueue",
   "version": "1.0",
   "description": "Umožní ukládat zprávy do zásobníku a odesílat je do ChatGPT-někdy ho dopíšu pořádně",
   "permissions": ["storage", "scripting", "activeTab"],

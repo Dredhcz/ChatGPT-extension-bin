@@ -1,0 +1,53 @@
+*{
+  font-family: ui-sans-serif, -apple-system, system-ui, Segoe UI, Helvetica, Apple Color Emoji, Arial, sans-serif, Segoe UI Emoji, Segoe UI Symbol;
+
+}
+body{
+  background-color: #0fa37f;
+  border: none;
+}
+button{
+  border: none;
+  background-color: #383434;
+  color: rgb(255, 255, 255);
+  border-radius: 25px;
+  margin: 2px;
+  padding: 7px 10px;
+}
+textarea{
+  background-color: #383434;
+  color: rgb(255, 255, 255);
+  outline: 0px none transparent;
+  border-radius: 10px;
+  border: none;
+  overflow: auto;
+  outline: none;
+  padding: 5px;
+}
+textarea:focus{
+  outline:0px none transparent;
+}
+#message{
+  resize: none;
+}
+h3{
+  color: white;
+}
+h4{
+  color: white;
+}
+li{
+  display: flex;
+  padding: 5px;
+  margin: 5px 0px;
+  background-color: #17e5b2;
+  border-radius: 5px;
+}
+ul{
+  list-style-type: none;
+  padding: 0;
+}
+.delete-separate-button{
+  margin: auto 0 auto auto;
+  height: 40px;
+}
