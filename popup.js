@@ -21,11 +21,9 @@ document.getElementById("delete").addEventListener("click", async () => {
 // ▶️ Spuštění automatického odesílání
 document.getElementById("start-auto").addEventListener("click", async () => {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  
-  // Pošli zprávu backgroundu, aby content.js reinjektoval
+
   chrome.runtime.sendMessage({ action: "startAutoSend" }, (response) => {
     if (response.status === "content-injected") {
-      // Počkej chvilku, pak spusť funkci z content.js
       setTimeout(() => {
         chrome.scripting.executeScript({
           target: { tabId: tab.id },
@@ -48,9 +46,12 @@ function updatePopupList(buffer) {
   buffer.forEach((msg, index) => {
     const li = document.createElement("li");
 
-    const prgrh = document.createElement("p");
-    prgrh.textContent = (index + 1) +". " + msg;
+    const commas = document.createElement("button");
+    commas.className = "commas";
+    commas.textContent = "☰";
 
+    const prgrh = document.createElement("p");
+    prgrh.textContent = `${index + 1}. ${msg}`;
     const btn = document.createElement("button");
     btn.className = "delete-separate-button";
     btn.textContent = "Delete";
@@ -60,11 +61,14 @@ function updatePopupList(buffer) {
       await chrome.storage.local.set({ buffer });
     });
 
+    li.appendChild(commas);
     li.appendChild(prgrh);
     li.appendChild(btn);
+
     list.appendChild(li);
-    
   });
+
+  initSortable(list, buffer); // 🎯 Aktivuj Sortable po vykreslení
 }
 
 // ⏳ Načti seznam zpráv při otevření popupu
@@ -80,3 +84,24 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
     updatePopupList(newBuffer);
   }
 });
+
+// 📦 Inicializace SortableJS
+function initSortable(list, buffer) {
+  if (window.sortableInstance) {
+    window.sortableInstance.destroy(); // 💥 Znič starý instance
+  }
+
+  window.sortableInstance = new Sortable(list, {
+    handle: '.commas', // Táhne se jen za ☰
+    animation: 150,
+    onEnd: async function (evt) {
+      // 📦 Ulož nový pořádek do storage
+      const newOrder = [...list.children].map(li => {
+        // 🆕 UPRAVENO - odstraní číslo při ukládání
+        const text = li.querySelector("p").textContent;
+        return text.replace(/^\d+\.\s/, ""); // odstraní "1. ", "2. " apod.
+      });
+      await chrome.storage.local.set({ buffer: newOrder });
+    }
+  });
+}

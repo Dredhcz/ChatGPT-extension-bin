@@ -7,13 +7,26 @@
   <title>ChatGPT bin</title>
 </head>
 <body>
-  <h3>New prompts</h3>
+  <main>
+  <div id="textarea-container">
+  <h3>New prompt</h3>
   <textarea name="message" id="message" cols="30" rows="10"></textarea>
   <button id="save">Add</button>
-  <h4>Queue of prompt</h4>
+  </div>
+  <div>
+    <div id="header4-container">
+      <h4>Queue of prompts</h4>
+      <button id="delete">Delete all</button>
+    </div>
+  
   <ul id="message-list"></ul>
-  <button id="delete">Delete all</button>
+  </div>
+<div id="buttons-container">
+  
   <button id="start-auto">Start auto-send</button>
+  </div>
+  </main>
 </body>
 <script src="popup.js"></script>
+<script src="Sortable.min.js"></script>
 </html>

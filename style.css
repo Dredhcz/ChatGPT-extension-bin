@@ -1,18 +1,26 @@
 *{
   font-family: ui-sans-serif, -apple-system, system-ui, Segoe UI, Helvetica, Apple Color Emoji, Arial, sans-serif, Segoe UI Emoji, Segoe UI Symbol;
-
+  margin: 0;
+  padding: 0;
+  
 }
 body{
   background-color: #0fa37f;
   border: none;
+  width: 250px;
+}
+main{
+  margin: 10px;
 }
 button{
   border: none;
   background-color: #383434;
   color: rgb(255, 255, 255);
   border-radius: 25px;
-  margin: 2px;
   padding: 7px 10px;
+  margin: auto 0 auto auto;
+  height: 30px;
+  cursor: pointer;
 }
 textarea{
   background-color: #383434;
@@ -23,13 +31,16 @@ textarea{
   overflow: auto;
   outline: none;
   padding: 5px;
+  margin: 10px 0 5px 0;
+  resize: none;
+  width: 100%;
+  box-sizing: border-box;
 }
+
 textarea:focus{
   outline:0px none transparent;
 }
-#message{
-  resize: none;
-}
+
 h3{
   color: white;
 }
@@ -42,12 +53,27 @@ li{
   margin: 5px 0px;
   background-color: #17e5b2;
   border-radius: 5px;
+
 }
 ul{
   list-style-type: none;
-  padding: 0;
+  margin-top: 10px;
 }
-.delete-separate-button{
-  margin: auto 0 auto auto;
-  height: 40px;
+
+#header4-container{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.commas{
+  margin: auto 5px;
+  cursor: pointer;
+  background: none;
+  color: #383434;
+}
+#buttons-container{
+  margin-top: 20px;
+}
+p{
+  margin: auto 0;
 }
