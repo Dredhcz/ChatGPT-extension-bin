@@ -2,10 +2,11 @@
   "manifest_version": 3,
   "name": "PromptQueue",
   "version": "1.0",
-  "description": "Umožní ukládat zprávy do zásobníku a odesílat je do ChatGPT-někdy ho dopíšu pořádně",
+  "description": "Umožní ukládat zprávy do zásobníku a odesílat je do ChatGPT – někdy ho dopíšu pořádně.",
   "permissions": ["storage", "scripting", "activeTab"],
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "background.js",
+    "type": "module"
   },
   "action": {
     "default_popup": "popup.html",
@@ -20,5 +21,8 @@
       "run_at": "document_idle"
     }
   ],
-  "host_permissions": ["https://chatgpt.com/*"]
+  "host_permissions": ["https://chatgpt.com/*", "https://extensionpay.com/*"],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self';"
+  }
 }

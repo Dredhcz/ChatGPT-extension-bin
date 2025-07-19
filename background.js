@@ -1,14 +1,20 @@
-console.log("background.js běží");
+importScripts('ExtPay.js');
+const extpay = ExtPay('promptqueue');
+extpay.startBackground();
+
+console.log("✅ background.js běží");
+
+extpay.getUser().then(user => {
+	console.log(user);
+})
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "refresh") {
-    // Přepošli zprávu popupu, pokud je otevřený
     chrome.runtime.sendMessage({ action: "updatePopup", buffer: request.buffer || [] });
     sendResponse({ status: "ok" });
   }
 
   if (request.action === "startAutoSend") {
-    // Reinjektuj content.js na aktivní tab
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       if (tabs.length === 0) {
         sendResponse({ status: "no-active-tab" });
@@ -24,6 +30,20 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         sendResponse({ status: "injection-failed" });
       });
     });
-    return true; // říká, že odpověď přijde asynchronně
+    return true; // async response
+  }
+
+  if (request.action === "checkLicense") {
+    extpay.getUser().then(user => {
+      sendResponse({ paid: user.paid });
+    }).catch(err => {
+      console.error("❌ Chyba při kontrole licence", err);
+      sendResponse({ paid: false });
+    });
+    return true; // async response
+  }
+  if (request.action === "openPaymentPage") {
+    extpay.openPaymentPage();
+    sendResponse({ status: "opened" });
   }
 });

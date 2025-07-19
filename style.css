@@ -53,7 +53,8 @@ li{
   margin: 5px 0px;
   background-color: #17e5b2;
   border-radius: 5px;
-
+  justify-content: space-between;
+  align-items: center;  
 }
 ul{
   list-style-type: none;
@@ -67,13 +68,23 @@ ul{
 }
 .commas{
   margin: auto 5px;
-  cursor: pointer;
+  cursor: grab;
   background: none;
   color: #383434;
+  flex-shrink: 0;
+}
+.commas:active{
+  cursor: grabbing;
 }
 #buttons-container{
   margin-top: 20px;
 }
 p{
   margin: auto 0;
+  flex: 1;
+  margin: 0;
+  word-break: break-word;
+}
+#delete{
+  flex-shrink: 0;
 }

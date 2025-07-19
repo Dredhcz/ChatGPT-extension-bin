@@ -1,103 +1,102 @@
-function waitForResponseToFinish(callback) {
-    const target = document.querySelector('main');
-    if (!target) return;
-  
-    const observer = new MutationObserver(() => {
-      const isGenerating = document.querySelector('#composer-submit-button');
-  
-      if (!isGenerating) {
-        observer.disconnect();
-        console.log("✅ Odpověď hotová");
-        callback();
-      }
+console.log("✅ content.js běží");
+
+async function isPremiumUser() {
+  return new Promise((resolve) => {
+    chrome.runtime.sendMessage({ action: "checkLicense" }, (response) => {
+      resolve(response.paid);
     });
-  
-    observer.observe(target, { childList: true, subtree: true });
+  });
+}
+
+async function canUsePrompt() {
+  const isPremium = await isPremiumUser();
+
+  if (isPremium) {
+    console.log("👑 Premium uživatel - žádný limit");
+    return true;
   }
-  
-  function waitUntilGenerationStartsThenFinish(callback) {
-    const target = document.querySelector('main');
-    if (!target) return;
-  
-    const observer = new MutationObserver(() => {
-      const isGenerating = document.querySelector('#composer-submit-button');
-  
-      if (isGenerating) {
-        console.log("🟡 Detekováno zahájení generování");
-        observer.disconnect();
-  
-        // Nyní sleduj konec generování
-        waitForResponseToFinish(callback);
-      }
-    });
-  
-    observer.observe(target, { childList: true, subtree: true });
+
+  const today = new Date().toISOString().split('T')[0];
+  const { promptCount = 0, lastDate = "" } = await chrome.storage.local.get(['promptCount', 'lastDate']);
+
+  let remaining = lastDate !== today ? 5 : (5 - promptCount);
+
+  if (remaining > 0) {
+    console.log(`📊 Free: zbývá ${remaining} promptů dnes`);
+    return true;
   }
-  
-  function sendNextMessageFromBuffer() {
-    console.log("📤 Funkce sendNextMessageFromBuffer se spustila");
-  
-    chrome.storage.local.get(["buffer"]).then(result => {
-      let buffer = result.buffer;
-      console.log("📦 Buffer uvnitř .then:", buffer);
-  
-      if (!buffer || buffer.length === 0) {
-        console.log("🚫 Buffer je prázdný");
-        alert("All prompts generated");
-        return;
-      }
-  
-      const nextMessage = buffer[0];
-      const inputBox = document.querySelector('div[contenteditable="true"]');
-      const sendButton = document.querySelector('button[id="composer-submit-button"]');
-  
-      if (!inputBox) {
-        console.warn("⚠️ Nelze najít vstupní pole");
-        return;
-      }
-  
-      // 1. Vyplnění vstupního pole
-      inputBox.focus();
-      inputBox.textContent = nextMessage;
-      inputBox.dispatchEvent(new Event("input", {bubbles: true}));
-      setTimeout(() => {
-      // 2. Odeslání zprávy
+
+  console.log("🚫 Limit dosažen");
+  alert("Dnešní limit 5 promptů ve free verzi byl dosažen.\nKup Premium pro neomezený přístup.");
+  chrome.runtime.sendMessage({ action: "openPaymentPage" });
+  return false;
+}
+
+async function incrementPromptCount() {
+  const today = new Date().toISOString().split('T')[0];
+  let { promptCount = 0, lastDate = "" } = await chrome.storage.local.get(['promptCount', 'lastDate']);
+
+  if (lastDate !== today) {
+    promptCount = 0;
+    lastDate = today;
+  }
+
+  promptCount++;
+  await chrome.storage.local.set({ promptCount, lastDate });
+  console.log(`✅ Prompt count zvýšen: ${promptCount}/5 dnes`);
+}
+
+async function sendNextMessageFromBuffer() {
+  console.log("📤 Spouštím sendNextMessageFromBuffer");
+
+  chrome.storage.local.get(["buffer"]).then(async result => {
+    let buffer = result.buffer;
+
+    if (buffer.length === 0) {
+      console.log("🚫 Buffer je prázdný");
+      alert("All prompts generated");
+      return;
+    }
+
+    if (!(await canUsePrompt())) return; // ⛔ STOP pro free když překročil limit
+
+    const nextMessage = buffer[0];
+    const inputBox = document.querySelector('div[contenteditable="true"]');
+    const sendButton = document.querySelector('button[id="composer-submit-button"]');
+
+    if (!inputBox) {
+      console.warn("⚠️ Nelze najít vstupní pole");
+      return;
+    }
+
+    inputBox.focus();
+    inputBox.textContent = nextMessage;
+    inputBox.dispatchEvent(new Event("input", { bubbles: true }));
+
+    setTimeout(() => {
       if (sendButton) {
         sendButton.click();
         console.log("🖱️ Klikám na tlačítko odeslání");
       } else {
-        console.log("↩️ Tlačítko nenalezeno, zkouším Enter");
         const enterDown = new KeyboardEvent("keydown", {
-          key: "Enter",
-          code: "Enter",
-          keyCode: 13,
-          which: 13
+          key: "Enter", code: "Enter", keyCode: 13, which: 13
         });
         inputBox.focus();
         inputBox.dispatchEvent(enterDown);
-      }}, 2000); 
-  
-      // 3. Odebrání zprávy z bufferu
-      buffer.shift();
-      chrome.storage.local.set({ buffer }).then(() => {
-        chrome.runtime.sendMessage({ action: "refresh" }, (response) => {
-          console.log("🔄 Buffer aktualizován a popup refreshnut:", response);
-        });
-      });
-  
-      // 4. Čekání na odpověď (nejprve start, pak konec)
-      waitUntilGenerationStartsThenFinish(() => {
-        console.log("✅ Odpověď hotová, čekám 2s a pokračuju");
-  
-        setTimeout(() => {
-          sendNextMessageFromBuffer();
-        }, 2000); // Pauza mezi odpověďmi
-      });
+      }
+    }, 2000);
+
+    await incrementPromptCount();
+
+    buffer.shift();
+    await chrome.storage.local.set({ buffer });
+    chrome.runtime.sendMessage({ action: "refresh" });
+
+    waitUntilGenerationStartsThenFinish(() => {
+      console.log("✅ Odpověď hotová, čekám 2s a pokračuju");
+      setTimeout(sendNextMessageFromBuffer, 2000);
     });
-  }
-  
-  // Umožní spuštění z konzole
-  window.sendNextMessageFromBuffer = sendNextMessageFromBuffer;
-  
-  console.log("✅ content.js běží");
-  
+  });
+}
+
+window.sendNextMessageFromBuffer = sendNextMessageFromBuffer;
